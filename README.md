@@ -13,3 +13,4 @@ easi was created and designed to integrate some earthquake systems in the data r
 | easi version | Python | PyGMT |  GMT  |  PyQt  | Paramiko |
 | :----------: | :----: | :---: | :---: | :----: | :------: |
 |    2.0.0     |   3.7  | 0.5.0 | 6.2.0 | 5.15.3 |   2.7.2  |
+|    1.0.0     |   2.7  |  n/a  |  n/a  |  n/a   |   n/a    |
