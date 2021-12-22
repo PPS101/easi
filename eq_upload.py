@@ -21,17 +21,21 @@ def eqUpload(self):
 	shutil.copy(eqInfoFile_folder + "\\" + eqInfoFile, sambaFolder)
 	utf8_event = eqInfoFile[:-5] + '_utf8.html'
 	BLOCKSIZE = 1048576
-	with codecs.open(sambaFolder + "\\" + eqInfoFile, "r", "windows-1252") as sourceFile:
-		with codecs.open(sambaFolder + "\\" + utf8_event , "w", "utf-8") as targetFile:
-			while True:
-				contents = sourceFile.read(BLOCKSIZE)
-				if not contents:
-					break
-				targetFile.write(contents)
-				targetFile.close()
-	sourceFile.close()
-	with open(sambaFolder + "\\" + utf8_event, 'r') as eqInfo_open:
-		EqInfoEventLine = eqInfo_open.read().splitlines()
+	try:
+		with codecs.open(sambaFolder + "\\" + eqInfoFile,'r', encoding='utf-8') as eqInfo_open:
+			EqInfoEventLine = eqInfo_open.read().splitlines()
+	except UnicodeDecodeError:
+		with codecs.open(sambaFolder + "\\" + eqInfoFile, "r", "windows-1252") as sourceFile:
+			with codecs.open(sambaFolder + "\\" + utf8_event , "w", "utf-8") as targetFile:
+				while True:
+					contents = sourceFile.read(BLOCKSIZE)
+					if not contents:
+						break
+					targetFile.write(contents)
+					targetFile.close()
+		sourceFile.close()
+		with codecs.open(sambaFolder + "\\" + utf8_event, 'r',encoding='utf-8') as eqInfo_open:
+			EqInfoEventLine = eqInfo_open.read().splitlines()
 
 	findDt = "<!-- 2 DateTime-Data  -->"
 	findLoc = "<!-- 3 Location-Data  -->"
@@ -51,8 +55,8 @@ def eqUpload(self):
 			eqInfo_Mainloc_0 = eqInfo_Mainloc.split(' km ')[0].strip()
 			eqInfo_Mainloc_1 = "km " + eqInfo_Mainloc.split(' km ')[1].strip()
 			eqInfoLatLon = eqInfo_loc.split(' - ')[0].strip()
-			eqInfoLat = eqInfoLatLon.split(',')[0].strip()[:-3]
-			eqInfoLon= eqInfoLatLon.split(',')[1].strip()[:-3]
+			eqInfoLat = eqInfoLatLon.split(',')[0].strip()[:5]
+			eqInfoLon= eqInfoLatLon.split(',')[1].strip()[:6]
 		if findDep in line:
 			lineDep = i + 1
 			eqInfo_dep = EqInfoEventLine[lineDep].strip()
@@ -60,7 +64,7 @@ def eqUpload(self):
 			lineMag = i + 1
 			eqInfo_mag = EqInfoEventLine[lineMag].strip()
 			eqInfo_mag = eqInfo_mag.split()[-1]
-	with open (mainDir + '\\EQweb_format.txt', 'r') as format:
+	with open (mainDir + '\\EQweb_format.txt', 'r',encoding='utf-8') as format:
 		formatHtml_lines = format.read().splitlines()
 		if 4.0 <= float(eqInfo_mag) < 5.0:
 			formatHtml_lines[15] = formatHtml_lines[15].replace('(MAGNITUDE)','<strong>(MAGNITUDE)</strong>')
@@ -100,7 +104,7 @@ def eqUpload(self):
 		newHtmlLines = newLine_0 + '\n' + newLine_1 + '\n' + newLine_2 +'\n' + newLine_3 + '\n' + newLine_4 + '\n' + newLine_5 + '\n' + newLine_6 + '\n' + newLine_7 + '\n' + newLine_8 + '\n' + newLine_9 + '\n' + newLine_10 + '\n' + newLine_11 + '\n' + newLine_12 + '\n' + newLine_13 + '\n' + newLine_14 + '\n' + newLine_15 + '\n' + newLine_16 + '\n' + newLine_17 + '\n' + newLine_18 + '\n' + newLine_19
 		result = QMessageBox.question(self, 'Message', 'Are you sure you want to upload? \n' + eqInfoFile + '\n' + self.comboFOrNf.currentText() + '\n' + eqInfo_dt + '\n' + 'M' + eqInfo_mag + '\n' + eqInfoLat + 'N, ' + eqInfoLon + 'E - ' + eqInfo_Mainloc_0 + ' ' + eqInfo_Mainloc_1, QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 		if result == QMessageBox.Yes:
-			with codecs.open (sambaDir + '\\EQLatest.html', 'r') as eqHtml_read:
+			with codecs.open (sambaDir + '\\EQLatest.html', 'r', encoding='utf-8') as eqHtml_read:
 				htmlLine = eqHtml_read.readlines()
 				clue = 'enter new event below'
 				for i,line in enumerate(htmlLine):
@@ -108,7 +112,7 @@ def eqUpload(self):
 						insertToLine = i+1
 				htmlLine.insert(insertToLine,'\n' + newHtmlLines + '\n')
 				eqHtml_read.close()
-				with open (sambaDir + '\\EQLatest.html', 'w') as eqHtml_write:
+				with codecs.open (sambaDir + '\\EQLatest.html', 'w',encoding='utf-8', errors='ignore') as eqHtml_write:
 					htmlLine = "".join(htmlLine)
 					eqHtml_write.writelines(htmlLine)
 					eqInfo_open.close()
